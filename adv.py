@@ -49,6 +49,7 @@ def next_moves(traversal_graph, current_room):
     seen = set([current_room.id])
     exits = [{'direction': exit, 'path': []}
              for exit in traversal_graph[current_room.id].items() if exit[1] is not None and exit[1] not in seen]
+    random.seed(random.randint(0,1000000))
     random.shuffle(exits)
     while len(exits) > 0:
         current = exits.pop(0)
@@ -64,42 +65,55 @@ def next_moves(traversal_graph, current_room):
                 for exit in traversal_graph[current['direction'][1]].items()
                 if exit[1] is not None and exit[1] not in seen
             ]
+            random.seed(random.randint(0,1000000))
             random.shuffle(next_exits)
             exits = exits + next_exits
 
+def find_path(player):
+    player = Player(world.starting_room)
 
-# Fill this out with directions to walk
-# traversal_path = ['n', 'n']
-traversal_path = []
-traversal_graph = {}
-on_move(traversal_graph, None, player.current_room)
+    traversal_path = []
+    traversal_graph = {}
+    on_move(traversal_graph, None, player.current_room)
 
-while len(traversal_graph.keys()) != len(world.rooms):
-    room = player.current_room
-    directions = next_moves(traversal_graph, room)
-    for direction in directions:
-        traversal_path.append(direction)
-        current_room = player.current_room
-        player.travel(direction)
-        next_room = player.current_room
-        on_move(traversal_graph, current_room, next_room, direction)
+    while len(traversal_graph.keys()) != len(world.rooms):
+        room = player.current_room
+        directions = next_moves(traversal_graph, room)
+        for direction in directions:
+            traversal_path.append(direction)
+            current_room = player.current_room
+            player.travel(direction)
+            next_room = player.current_room
+            on_move(traversal_graph, current_room, next_room, direction)
+    return traversal_path
 
-# TRAVERSAL TEST
-visited_rooms = set()
-player.current_room = world.starting_room
-visited_rooms.add(player.current_room)
+def calculate_move(player, path):
+    visited_rooms = set()
 
-for move in traversal_path:
-    player.travel(move)
+    player.current_room = world.starting_room
     visited_rooms.add(player.current_room)
 
-if len(visited_rooms) == len(room_graph):
-    print(
-        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
-else:
-    print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-    print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
+    for move in traversal_path:
+        player.travel(move)
+        visited_rooms.add(player.current_room)
 
+    if len(visited_rooms) == len(room_graph):
+        print(
+            f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+    else:
+        print("TESTS FAILED: INCOMPLETE TRAVERSAL")
+        print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
+
+
+for i in range(0, 1000): 
+    # Fill this out with directions to walk
+    # traversal_path = ['n', 'n']
+    traversal_path = find_path(player)
+    if len(traversal_path) < 980:
+        print(len(traversal_path)) #970
+
+        # TRAVERSAL TEST
+        calculate_move(player, traversal_path)
 
 #######
 # UNCOMMENT TO WALK AROUND
